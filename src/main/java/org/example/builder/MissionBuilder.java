@@ -1,30 +1,30 @@
 package org.example.builder;
 
 import org.example.model.*;
+import org.example.model.enums.MissionOutcome;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public interface MissionBuilder {
-    void setMissionId(String missionId);
-    void setDate(LocalDate date);
-    void setLocation(String location);
-    void setOutcome(Outcome outcome);
-    void setDamageCost(Long damageCost);
-    void setCurse(Curse curse);
-    void setSorcerers(List<Sorcerer> sorcerers);
-    void setTechniques(List<Technique> techniques);
-    void setEconomicAssessment(EconomicAssessment economicAssessment);
-    void setCivilianImpact(CivilianImpact civilianImpact);
-    void setEnemyActivity(EnemyActivity enemyActivity);
-    void setEnvironmentConditions(EnvironmentConditions environmentConditions);
-    void setOperationTimeline(List<TimelineEvent> operationTimeline);
-    void setOperationTags(List<String> operationTags);
-    void setSupportUnits(List<String> supportUnits);
-    void setRecommendations(List<String> recommendations);
-    void setNotes(String notes);
-    void setArtifactsRecovered(List<String> artifactsRecovered);
-    void setEvacuationZones(List<String> evacuationZones);
-    void setStatusEffects(List<String> statusEffects);
+    MissionBuilder missionId(String value);
+    MissionBuilder date(LocalDate value);
+    MissionBuilder location(String value);
+    MissionBuilder outcome(MissionOutcome value);
+    MissionBuilder damageCost(Long value);
+    MissionBuilder curse(Curse value);
+    MissionBuilder addSorcerer(Sorcerer value);
+    MissionBuilder addTechnique(Technique value);
+    MissionBuilder economicAssessment(EconomicAssessment value);
+    MissionBuilder civilianImpact(CivilianImpact value);
+    MissionBuilder enemyActivity(EnemyActivity value);
+    MissionBuilder environmentConditions(EnvironmentConditions value);
+    MissionBuilder addTimelineEvent(TimelineEvent value);
+    MissionBuilder addOperationTag(String value);
+    MissionBuilder addSupportUnit(String value);
+    MissionBuilder addRecommendation(String value);
+    MissionBuilder notes(String value);
+    MissionBuilder addArtifactRecovered(String value);
+    MissionBuilder addEvacuationZone(String value);
+    MissionBuilder addStatusEffect(String value);
     Mission build();
 }

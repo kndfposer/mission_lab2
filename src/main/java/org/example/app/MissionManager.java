@@ -1,50 +1,36 @@
 package org.example.app;
 
-
-import org.example.factory.MissionLoaderFactory;
-import org.example.loader.MissionLoader;
+import org.example.loader.DefaultMissionLoaderRegistryFactory;
+import org.example.loader.MissionLoaderRegistry;
 import org.example.model.Mission;
 import org.example.report.MissionReportStrategy;
-import org.example.ui.FileChooser;
-import org.example.ui.ReportTypeChooser;
+import org.example.report.SummaryMissionReportStrategy;
+import org.example.ui.ConsoleFileChooser;
+import org.example.validator.MissionValidator;
 
 import java.io.File;
 import java.util.Scanner;
 
 public class MissionManager {
     private final Scanner scanner = new Scanner(System.in);
-    private final MissionLoaderFactory loaderFactory = new MissionLoaderFactory();
+    private final MissionLoaderRegistry loaderRegistry = DefaultMissionLoaderRegistryFactory.createDefault();
+    private final MissionValidator validator = new MissionValidator();
+    private MissionReportStrategy reportStrategy = new SummaryMissionReportStrategy();
 
     public void start() {
-        System.out.println("Для выхода введите 0 вместо пути к файлу.");
-
+        System.out.println("Введите 0 вместо пути, чтобы выйти");
         while (true) {
-            FileChooser fileChooser = new FileChooser(scanner);
-            File file = fileChooser.chooseFile();
+            File file = ConsoleFileChooser.choose(scanner);
             if (file == null) {
                 System.out.println("ПРОГРАММА ЗАВЕРШЕНА");
                 return;
             }
-
-            if (!file.exists()) {
-                System.out.println("Файл не найден.");
-                continue;
-            }
-
             try {
-                MissionLoader loader = loaderFactory.getLoader(file);
-                Mission mission = loader.load(file);
-                MissionReportStrategy strategy = new ReportTypeChooser(scanner).chooseStrategy();
-                System.out.println();
-                System.out.println(strategy.createReport(mission));
+                Mission mission = loaderRegistry.load(file);
+                validator.validate(mission);
+                System.out.println(reportStrategy.generate(mission));
             } catch (Exception e) {
                 System.out.println("Ошибка: " + e.getMessage());
-            }
-
-            System.out.print("Нажмите Enter для продолжения или 0 для выхода: ");
-            if ("0".equals(scanner.nextLine().trim())) {
-                System.out.println("ПРОГРАММА ЗАВЕРШЕНА");
-                return;
             }
         }
     }

@@ -1,12 +1,10 @@
-package org.example.loader;
+package org.example.loader.spi;
 
 import org.example.model.Mission;
 
 import java.io.File;
 import java.io.IOException;
 
-public interface MissionLoader {
-    String getFormatName();
-    boolean supports(File file);
+public interface MissionLoader extends MissionFormatSupport {
     Mission load(File file) throws IOException;
 }

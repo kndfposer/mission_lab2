@@ -3,14 +3,10 @@ package org.example.ui;
 import java.io.File;
 import java.util.Scanner;
 
-public class FileChooser {
-    private final Scanner scanner;
+public final class ConsoleFileChooser {
+    private ConsoleFileChooser() {}
 
-    public FileChooser(Scanner scanner) {
-        this.scanner = scanner;
-    }
-
-    public File chooseFile() {
+    public static File choose(Scanner scanner) {
         System.out.print("Введите путь к файлу миссии: ");
         String path = scanner.nextLine().trim();
         if ("0".equals(path)) {

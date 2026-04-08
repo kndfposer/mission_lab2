@@ -2,43 +2,26 @@ package org.example.report;
 
 import org.example.model.*;
 
-import java.util.StringJoiner;
-
 public class SummaryMissionReportStrategy implements MissionReportStrategy {
     @Override
-    public String createReport(Mission mission) {
+    public String generate(Mission mission) {
         StringBuilder sb = new StringBuilder();
-        sb.append("КРАТКАЯ СВОДКА ПО МИССИИ\n");
-        sb.append("missionId: ").append(mission.getMissionId()).append('\n');
-        sb.append("date: ").append(mission.getDate()).append('\n');
-        sb.append("location: ").append(mission.getLocation()).append('\n');
-        sb.append("outcome: ").append(mission.getOutcome()).append('\n');
-        if (mission.getDamageCost() != null) sb.append("damageCost: ").append(mission.getDamageCost()).append('\n');
-
-        Curse curse = mission.getCurse();
-        sb.append("\nПроклятие: ").append(curse.getName()).append(" [").append(curse.getThreatLevel()).append("]\n");
-
+        sb.append("=== СВОДКА ПО МИССИИ === ");
+                sb.append("ID: ").append(mission.getMissionId()).append(' ');
+        sb.append("Дата: ").append(mission.getDate()).append(' ');
+        sb.append("Локация: ").append(mission.getLocation()).append(' ');
+        sb.append("Результат: ").append(mission.getOutcome()).append(' ');
+        if (mission.getDamageCost() != null) sb.append("Ущерб: ").append(mission.getDamageCost()).append(' ');
+        sb.append("Проклятие: ").append(mission.getCurse().getName()).append(" / ").append(mission.getCurse().getThreatLevel()).append(' ');
         if (!mission.getSorcerers().isEmpty()) {
-            sb.append("\nУчастники:\n");
-            for (Sorcerer sorcerer : mission.getSorcerers()) {
-                sb.append("- ").append(sorcerer.getName()).append(" (").append(sorcerer.getRank()).append(")\n");
-            }
+            sb.append("Участники: ");
+            for (Sorcerer s : mission.getSorcerers()) sb.append(" - ").append(s.getName()).append(" (").append(s.getRank()).append(") ");
         }
-
         if (!mission.getTechniques().isEmpty()) {
-            sb.append("\nТехники:\n");
-            for (Technique technique : mission.getTechniques()) {
-                sb.append("- ").append(technique.getName())
-                        .append(" [").append(technique.getType()).append("]")
-                        .append(", owner=").append(technique.getOwner());
-                if (technique.getDamage() != null) sb.append(", damage=").append(technique.getDamage());
-                sb.append('\n');
-            }
+            sb.append("Техники: ");
+            for (Technique t : mission.getTechniques()) sb.append(" - ").append(t.getName()).append(", ").append(t.getType()).append(", владелец: ").append(t.getOwner()).append(t.getDamage()!=null?", урон: "+t.getDamage():"").append(' ');
         }
-
-        if (mission.getNotes() != null) {
-            sb.append("\nnotes: ").append(mission.getNotes()).append('\n');
-        }
+        if (mission.getNotes() != null) sb.append("Примечание: ").append(mission.getNotes()).append(' ');
         return sb.toString();
     }
 }

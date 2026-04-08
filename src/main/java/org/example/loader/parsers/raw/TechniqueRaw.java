@@ -3,18 +3,4 @@ package org.example.loader.parsers.raw;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TechniqueRaw {
-    private String name;
-    private String type;
-    private String owner;
-    private Long damage;
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-    public String getOwner() { return owner; }
-    public void setOwner(String owner) { this.owner = owner; }
-    public Long getDamage() { return damage; }
-    public void setDamage(Long damage) { this.damage = damage; }
-}
+public class TechniqueRaw { public String name; public String type; public String owner; public Long damage; }
