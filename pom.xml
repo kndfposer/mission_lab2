@@ -58,7 +58,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>org.example.app.Main</mainClass>
+                    <mainClass>org.example.manager.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>
