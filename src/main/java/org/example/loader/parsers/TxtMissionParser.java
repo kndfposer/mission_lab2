@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 public class TxtMissionParser {
@@ -16,155 +18,320 @@ public class TxtMissionParser {
     public Mission parse(File file) throws IOException {
         MissionDirector director = new MissionDirector(new DefaultMissionBuilder());
 
+        List<String> lines = Files.readAllLines(file.toPath());
+
         String section = "";
+
         Sorcerer currentSorcerer = null;
         Technique currentTechnique = null;
-        EnvironmentConditions env = null;
-        Curse currentCurse = null;
+        TimelineEvent currentTimelineEvent = null;
 
-        List<String> lines = Files.readAllLines(file.toPath());
+        Curse currentCurse = null;
+        EconomicAssessment currentEconomic = null;
+        CivilianImpact currentCivilian = null;
+        EnemyActivity currentEnemy = null;
+        EnvironmentConditions currentEnvironment = null;
 
         for (String raw : lines) {
             String line = raw.trim();
-            if (line.isEmpty()) continue;
+
+            if (line.isEmpty() || line.startsWith("#")) {
+                continue;
+            }
+
+            if (!line.startsWith("[") && line.contains(":") && !line.contains("=")) {
+                String[] parts = line.split(":", 2);
+                if (parts.length == 2) {
+                    String key = parts[0].trim().toLowerCase();
+                    String value = parts[1].trim();
+
+                    if ("note".equals(key) || "notes".equals(key)) {
+                        director.setNotes(value);
+                        continue;
+                    }
+                }
+            }
 
             if (line.startsWith("[") && line.endsWith("]")) {
-                if (currentSorcerer != null) {
-                    director.addSorcerer(currentSorcerer);
-                    currentSorcerer = null;
+                flushCurrentObjects(director, currentSorcerer, currentTechnique, currentTimelineEvent);
+
+                currentSorcerer = null;
+                currentTechnique = null;
+                currentTimelineEvent = null;
+
+                section = normalizeSection(line);
+
+                switch (section) {
+                    case "[SORCERER]" -> currentSorcerer = new Sorcerer();
+                    case "[TECHNIQUE]" -> currentTechnique = new Technique();
+                    case "[TIMELINE]" -> currentTimelineEvent = new TimelineEvent();
+                    case "[CURSE]" -> {
+                        if (currentCurse == null) currentCurse = new Curse();
+                    }
+                    case "[ECONOMIC]" -> {
+                        if (currentEconomic == null) currentEconomic = new EconomicAssessment();
+                    }
+                    case "[CIVILIAN]" -> {
+                        if (currentCivilian == null) currentCivilian = new CivilianImpact();
+                    }
+                    case "[ENEMY]" -> {
+                        if (currentEnemy == null) currentEnemy = new EnemyActivity();
+                    }
+                    case "[ENVIRONMENT]" -> {
+                        if (currentEnvironment == null) currentEnvironment = new EnvironmentConditions();
+                    }
                 }
-                if (currentTechnique != null) {
-                    director.addTechnique(currentTechnique);
-                    currentTechnique = null;
-                }
-
-                section = line;
-
-                if ("[SORCERER]".equals(section)) currentSorcerer = new Sorcerer();
-                if ("[TECHNIQUE]".equals(section)) currentTechnique = new Technique();
-                if ("[ENVIRONMENT]".equals(section)) env = new EnvironmentConditions();
-                if ("[CURSE]".equals(section) && currentCurse == null) currentCurse = new Curse();
-
                 continue;
             }
 
             String[] parts = line.split("=", 2);
-            if (parts.length != 2) continue;
+            if (parts.length != 2) {
+                continue;
+            }
 
             String key = parts[0].trim();
             String value = parts[1].trim();
 
             switch (section) {
-                case "[MISSION]" -> {
-                    if ("missionId".equals(key)) {
-                        // base info собирается по частям, поэтому используем текущие значения через builder нельзя;
-                        // просто задаём поля по мере чтения
-                        director.setBaseInfo(value, null, null, MissionOutcome.UNKNOWN, null);
-                    } else if ("date".equals(key)) {
-                        Mission temp = director.build();
-                        director = recreateDirectorWithBase(
-                                temp.getMissionId(),
-                                LocalDate.parse(value),
-                                temp.getLocation(),
-                                temp.getOutcome(),
-                                temp.getDamageCost(),
-                                temp
-                        );
-                    } else if ("location".equals(key)) {
-                        Mission temp = director.build();
-                        director = recreateDirectorWithBase(
-                                temp.getMissionId(),
-                                temp.getDate(),
-                                value,
-                                temp.getOutcome(),
-                                temp.getDamageCost(),
-                                temp
-                        );
-                    } else if ("outcome".equals(key)) {
-                        Mission temp = director.build();
-                        director = recreateDirectorWithBase(
-                                temp.getMissionId(),
-                                temp.getDate(),
-                                temp.getLocation(),
-                                MissionOutcome.fromString(value),
-                                temp.getDamageCost(),
-                                temp
-                        );
-                    } else if ("damageCost".equals(key)) {
-                        Mission temp = director.build();
-                        director = recreateDirectorWithBase(
-                                temp.getMissionId(),
-                                temp.getDate(),
+                case "[MISSION]" -> parseMission(director, key, value);
 
-
-                                temp.getLocation(),
-                                temp.getOutcome(),
-                                Long.parseLong(value),
-                                temp
-                        );
-                    }
-                }
                 case "[CURSE]" -> {
-                    if ("name".equals(key)) {
-                        currentCurse.setName(value);
-                    } else if ("threatLevel".equals(key)) {
-                        currentCurse.setThreatLevel(ThreatLevel.fromString(value));
-                    }
+                    if (currentCurse == null) currentCurse = new Curse();
+                    parseCurse(currentCurse, key, value);
                     director.setCurse(currentCurse);
                 }
+
                 case "[SORCERER]" -> {
-                    if ("name".equals(key)) currentSorcerer.setName(value);
-                    else if ("rank".equals(key)) currentSorcerer.setRank(SorcererRank.fromString(value));
+                    if (currentSorcerer == null) currentSorcerer = new Sorcerer();
+                    parseSorcerer(currentSorcerer, key, value);
                 }
+
                 case "[TECHNIQUE]" -> {
-                    if ("name".equals(key)) currentTechnique.setName(value);
-                    else if ("type".equals(key)) currentTechnique.setType(TechniqueType.fromString(value));
-                    else if ("owner".equals(key)) currentTechnique.setOwner(value);
-                    else if ("damage".equals(key)) currentTechnique.setDamage(Long.parseLong(value));
+                    if (currentTechnique == null) currentTechnique = new Technique();
+
+
+                    parseTechnique(currentTechnique, key, value);
                 }
+
+                case "[ECONOMIC]" -> {
+                    if (currentEconomic == null) currentEconomic = new EconomicAssessment();
+                    parseEconomic(currentEconomic, key, value);
+                    director.setEconomicAssessment(currentEconomic);
+                }
+
+                case "[CIVILIAN]" -> {
+                    if (currentCivilian == null) currentCivilian = new CivilianImpact();
+                    parseCivilian(currentCivilian, key, value);
+                    director.setCivilianImpact(currentCivilian);
+                }
+
+                case "[ENEMY]" -> {
+                    if (currentEnemy == null) currentEnemy = new EnemyActivity();
+                    parseEnemy(currentEnemy, key, value);
+                    director.setEnemyActivity(currentEnemy);
+                }
+
                 case "[ENVIRONMENT]" -> {
-                    if ("weather".equals(key)) env.setWeather(value);
-                    else if ("timeOfDay".equals(key)) env.setTimeOfDay(value);
-                    else if ("visibility".equals(key)) env.setVisibility(Visibility.fromString(value));
-                    else if ("cursedEnergyDensity".equals(key)) env.setCursedEnergyDensity(Integer.parseInt(value));
-                    director.setEnvironmentConditions(env);
+                    if (currentEnvironment == null) currentEnvironment = new EnvironmentConditions();
+                    parseEnvironment(currentEnvironment, key, value);
+                    director.setEnvironmentConditions(currentEnvironment);
                 }
+
+                case "[TIMELINE]" -> {
+                    if (currentTimelineEvent == null) currentTimelineEvent = new TimelineEvent();
+                    parseTimeline(currentTimelineEvent, key, value);
+                }
+
+                case "[EXTRA]" -> parseExtra(director, key, value);
             }
         }
 
-        if (currentSorcerer != null) director.addSorcerer(currentSorcerer);
-        if (currentTechnique != null) director.addTechnique(currentTechnique);
+        flushCurrentObjects(director, currentSorcerer, currentTechnique, currentTimelineEvent);
 
         return director.build();
     }
 
-    private MissionDirector recreateDirectorWithBase(
-            String missionId,
-            LocalDate date,
-            String location,
-            MissionOutcome outcome,
-            Long damageCost,
-            Mission oldMission
-    ) {
-        MissionDirector director = new MissionDirector(new DefaultMissionBuilder());
+    private void flushCurrentObjects(MissionDirector director,
+                                     Sorcerer currentSorcerer,
+                                     Technique currentTechnique,
+                                     TimelineEvent currentTimelineEvent) {
+        if (currentSorcerer != null) {
+            director.addSorcerer(currentSorcerer);
+        }
+        if (currentTechnique != null) {
+            director.addTechnique(currentTechnique);
+        }
+        if (currentTimelineEvent != null) {
+            director.addTimelineEvent(currentTimelineEvent);
+        }
+    }
+
+    private String normalizeSection(String rawSection) {
+        String upper = rawSection.trim().toUpperCase();
+        return switch (upper) {
+            case "[MISSION]" -> "[MISSION]";
+            case "[CURSE]" -> "[CURSE]";
+            case "[SORCERER]" -> "[SORCERER]";
+            case "[TECHNIQUE]" -> "[TECHNIQUE]";
+            case "[ECONOMIC]", "[ECONOMICASSESSMENT]", "[ECONOMIC_ASSESSMENT]" -> "[ECONOMIC]";
+            case "[CIVILIAN]", "[CIVILIANIMPACT]", "[CIVILIAN_IMPACT]" -> "[CIVILIAN]";
+            case "[ENEMY]", "[ENEMYACTIVITY]", "[ENEMY_ACTIVITY]" -> "[ENEMY]";
+            case "[ENVIRONMENT]", "[ENVIRONMENTCONDITIONS]", "[ENVIRONMENT_CONDITIONS]" -> "[ENVIRONMENT]";
+            case "[TIMELINE]", "[OPERATIONTIMELINE]", "[OPERATION_TIMELINE]" -> "[TIMELINE]";
+            case "[EXTRA]" -> "[EXTRA]";
+            default -> upper;
+        };
+    }
+
+    private void parseMission(MissionDirector director, String key, String value) {
+        switch (key) {
+            case "missionId" -> director.setBaseInfo(value, null, null, MissionOutcome.UNKNOWN, null);
+            case "date" -> {
+                Mission temp = director.build();
+                rebuildBaseInfo(director, temp.getMissionId(), parseDate(value), temp.getLocation(), temp.getOutcome(), temp.getDamageCost());
+            }
+            case "location" -> {
+                Mission temp = director.build();
+                rebuildBaseInfo(director, temp.getMissionId(), temp.getDate(), value, temp.getOutcome(), temp.getDamageCost());
+            }
+            case "outcome" -> {
+                Mission temp = director.build();
+                rebuildBaseInfo(director, temp.getMissionId(), temp.getDate(), temp.getLocation(),
+                        MissionOutcome.fromString(value), temp.getDamageCost());
+            }
+            case
+
+
+                    "damageCost" -> {
+                Mission temp = director.build();
+                rebuildBaseInfo(director, temp.getMissionId(), temp.getDate(), temp.getLocation(),
+                        temp.getOutcome(), parseLong(value));
+            }
+        }
+    }
+
+    private void rebuildBaseInfo(MissionDirector director,
+                                 String missionId,
+                                 LocalDate date,
+                                 String location,
+                                 MissionOutcome outcome,
+                                 Long damageCost) {
         director.setBaseInfo(missionId, date, location, outcome, damageCost);
+    }
 
-        if (oldMission.getCurse() != null) director.setCurse(oldMission.getCurse());
-        oldMission.getSorcerers().forEach(director::addSorcerer);
-        oldMission.getTechniques().forEach(director::addTechnique);
-        if (oldMission.getEconomicAssessment() != null) director.setEconomicAssessment(oldMission.getEconomicAssessment());
-        if (oldMission.getCivilianImpact() != null) director.setCivilianImpact(oldMission.getCivilianImpact());
-        if (oldMission.getEnemyActivity() != null) director.setEnemyActivity(oldMission.getEnemyActivity());
-        if (oldMission.getEnvironmentConditions() != null) director.setEnvironmentConditions(oldMission.getEnvironmentConditions());
-        oldMission.getOperationTimeline().forEach(director::addTimelineEvent);
-        oldMission.getOperationTags().forEach(director::addOperationTag);
-        oldMission.getSupportUnits().forEach(director::addSupportUnit);
-        oldMission.getRecommendations().forEach(director::addRecommendation);
-        director.setNotes(oldMission.getNotes());
-        oldMission.getArtifactsRecovered().forEach(director::addArtifactRecovered);
-        oldMission.getEvacuationZones().forEach(director::addEvacuationZone);
-        oldMission.getStatusEffects().forEach(director::addStatusEffect);
+    private void parseCurse(Curse curse, String key, String value) {
+        switch (key) {
+            case "name" -> curse.setName(value);
+            case "threatLevel" -> curse.setThreatLevel(ThreatLevel.fromString(value));
+        }
+    }
 
-        return director;
+    private void parseSorcerer(Sorcerer sorcerer, String key, String value) {
+        switch (key) {
+            case "name" -> sorcerer.setName(value);
+            case "rank" -> sorcerer.setRank(SorcererRank.fromString(value));
+        }
+    }
+
+    private void parseTechnique(Technique technique, String key, String value) {
+        switch (key) {
+            case "name" -> technique.setName(value);
+            case "type" -> technique.setType(TechniqueType.fromString(value));
+            case "owner" -> technique.setOwner(value);
+            case "damage" -> technique.setDamage(parseLong(value));
+        }
+    }
+
+    private void parseEconomic(EconomicAssessment economic, String key, String value) {
+        switch (key) {
+            case "totalDamageCost" -> economic.setTotalDamageCost(parseLong(value));
+            case "infrastructureDamage" -> economic.setInfrastructureDamage(parseLong(value));
+            case "commercialDamage" -> economic.setCommercialDamage(parseLong(value));
+            case "transportDamage" -> economic.setTransportDamage(parseLong(value));
+            case "recoveryEstimateDays" -> economic.setRecoveryEstimateDays(parseInteger(value));
+            case "insuranceCovered" -> economic.setInsuranceCovered(Boolean.parseBoolean(value));
+        }
+    }
+
+    private void parseCivilian(CivilianImpact civilian, String key, String value) {
+        switch (key) {
+            case "evacuated" -> civilian.setEvacuated(parseInteger(value));
+            case "injured" -> civilian.setInjured(parseInteger(value));
+            case "missing" -> civilian.setMissing(parseInteger(value));
+            case "publicExposureRisk" -> civilian.setPublicExposureRisk(PublicExposureRisk.fromString(value));
+        }
+    }
+
+    private void parseEnemy(EnemyActivity enemy, String key, String value) {
+        switch (key) {
+            case "behaviorType" -> enemy.setBehaviorType(value);
+            case "mobility" -> enemy.setMobility(Mobility.fromString(value));
+            case "escalationRisk" -> enemy.setEscalationRisk(EscalationRisk.fromString(value));
+            case "targetPriority" -> enemy.getTargetPriority().addAll(splitList(value));
+            case "attackPatterns" -> enemy.getAttackPatterns().addAll(splitList(value));
+            case "countermeasuresUsed" -> enemy.getCountermeasuresUsed().addAll(splitList(value));
+        }
+    }
+
+    private void parseEnvironment(EnvironmentConditions environment, String key, String value) {
+        switch (key) {
+            case "weather" -> environment.setWeather(value);
+            case "timeOfDay" -> environment.setTimeOfDay(value);
+            case "visibility" -> environment.setVisibility(Visibility.fromString(value));
+            case "cursedEnergyDensity" -> environment.setCursedEnergyDensity(parseInteger(value));
+        }
+    }
+
+    private void parseTimeline(TimelineEvent event, String key, String value) {
+        switch (key) {
+            case "timestamp" -> event.setTimestamp(parseDateTime(value));
+            case "type" -> event.setType(value);
+            case "description" -> event.setDescription(value);
+        }
+    }
+
+    private void
+
+
+    parseExtra(MissionDirector director, String key, String value) {
+        switch (key) {
+            case "tags", "operationTags" -> splitList(value).forEach(director::addOperationTag);
+            case "support", "supportUnits" -> splitList(value).forEach(director::addSupportUnit);
+            case "recommendations" -> splitList(value).forEach(director::addRecommendation);
+            case "artifacts", "artifactsRecovered" -> splitList(value).forEach(director::addArtifactRecovered);
+            case "zones", "evacuationZones" -> splitList(value).forEach(director::addEvacuationZone);
+            case "effects", "statusEffects" -> splitList(value).forEach(director::addStatusEffect);
+            case "notes", "note" -> director.setNotes(value);
+        }
+    }
+
+    private LocalDate parseDate(String value) {
+        return (value == null || value.isBlank()) ? null : LocalDate.parse(value.trim());
+    }
+
+    private LocalDateTime parseDateTime(String value) {
+        return (value == null || value.isBlank()) ? null : LocalDateTime.parse(value.trim());
+    }
+
+    private Long parseLong(String value) {
+        if (value == null || value.isBlank()) return null;
+        return Long.parseLong(value.trim());
+    }
+
+    private Integer parseInteger(String value) {
+        if (value == null || value.isBlank()) return null;
+        return Integer.parseInt(value.trim());
+    }
+
+    private List<String> splitList(String value) {
+        if (value == null || value.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(value.split("[,|]"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 }
+
+
