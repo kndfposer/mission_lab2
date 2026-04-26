@@ -14,14 +14,7 @@ public class XmlMissionHandler implements MissionLoader {
     public String getFormatName() { return "xml"; }
     public boolean supports(File file) {
         if (MissionFormatSniffer.detect(file).equals("xml")) return true;
-        return switch ("xml") {
-            case "json" -> FileContentUtils.hasExtension(file, ".json");
-            case "xml" -> FileContentUtils.hasExtension(file, ".xml");
-            case "yaml" -> FileContentUtils.hasExtension(file, ".yaml") || FileContentUtils.hasExtension(file, ".yml");
-            case "txt" -> FileContentUtils.hasExtension(file, ".txt");
-            case "type" -> false;
-            default -> false;
-        };
+        return  FileContentUtils.hasExtension(file, ".xml");
     }
     public Mission load(File file) throws IOException { return parser.parse(file); }
 }

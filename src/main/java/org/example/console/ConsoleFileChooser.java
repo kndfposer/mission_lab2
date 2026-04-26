@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.Scanner;
 
 public final class ConsoleFileChooser {
+
+
     private ConsoleFileChooser() {}
 
     public static File choose(Scanner scanner) {

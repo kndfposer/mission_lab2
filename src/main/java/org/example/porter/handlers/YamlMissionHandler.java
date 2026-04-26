@@ -14,14 +14,7 @@ public class YamlMissionHandler implements MissionLoader {
     public String getFormatName() { return "yaml"; }
     public boolean supports(File file) {
         if (MissionFormatSniffer.detect(file).equals("yaml")) return true;
-        return switch ("yaml") {
-            case "json" -> FileContentUtils.hasExtension(file, ".json");
-            case "xml" -> FileContentUtils.hasExtension(file, ".xml");
-            case "yaml" -> FileContentUtils.hasExtension(file, ".yaml") || FileContentUtils.hasExtension(file, ".yml");
-            case "txt" -> FileContentUtils.hasExtension(file, ".txt");
-            case "type" -> false;
-            default -> false;
-        };
+        return  FileContentUtils.hasExtension(file, ".yaml") || FileContentUtils.hasExtension(file, ".yml");
     }
     public Mission load(File file) throws IOException { return parser.parse(file); }
 }

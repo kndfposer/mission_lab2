@@ -6,10 +6,10 @@ public final class DefHandlerRegistryFactory {
     private DefHandlerRegistryFactory() {}
     public static MissionHandlerRegistry createDefault() {
         return new MissionHandlerRegistry()
+                .register(new TypeMissionHandler())
                 .register(new JsonMissionHandler())
                 .register(new XmlMissionHandler())
                 .register(new YamlMissionHandler())
-                .register(new TxtMissionHandler())
-                .register(new TypeMissionHandler());
+                .register(new TxtMissionHandler());
     }
 }

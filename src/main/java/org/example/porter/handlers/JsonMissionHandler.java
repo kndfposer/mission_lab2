@@ -14,14 +14,7 @@ public class JsonMissionHandler implements MissionLoader {
     public String getFormatName() { return "json"; }
     public boolean supports(File file) {
         if (MissionFormatSniffer.detect(file).equals("json")) return true;
-        return switch ("json") {
-            case "json" -> FileContentUtils.hasExtension(file, ".json");
-            case "xml" -> FileContentUtils.hasExtension(file, ".xml");
-            case "yaml" -> FileContentUtils.hasExtension(file, ".yaml") || FileContentUtils.hasExtension(file, ".yml");
-            case "txt" -> FileContentUtils.hasExtension(file, ".txt");
-            case "type" -> false;
-            default -> false;
-        };
-    }
+        return  FileContentUtils.hasExtension(file, ".json");
+        }
     public Mission load(File file) throws IOException { return parser.parse(file); }
 }

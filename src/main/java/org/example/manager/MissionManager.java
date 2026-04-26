@@ -30,11 +30,11 @@ public class MissionManager {
             }
 
             try {
-                String detectedFormat = detectFileFormat(file);
+                //String detectedFormat = detectFileFormat(file);
                 System.out.println();
                 System.out.println("____________________________________________________________");
                 System.out.println(" Файл: " + file.getName());
-                System.out.println(" Определённый формат: " + detectedFormat.toUpperCase());
+                //System.out.println(" Определённый формат: " + detectedFormat.toUpperCase());
                 System.out.println("____________________________________________________________");
                 System.out.println();
 
