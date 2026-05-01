@@ -1,33 +1,91 @@
 package org.example.model;
 
+import jakarta.persistence.*;
 import org.example.model.enums.MissionOutcome;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "missions")
 public class Mission {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "mission_id", nullable = false, unique = true)
     private String missionId;
     private LocalDate date;
     private String location;
-    private MissionOutcome outcome = MissionOutcome.UNKNOWN;
-    private Long damageCost;
-    private Curse curse;
-    private final List<Sorcerer> sorcerers = new ArrayList<>();
-    private final List<Technique> techniques = new ArrayList<>();
-    private EconomicAssessment economicAssessment;
-    private CivilianImpact civilianImpact;
-    private EnemyActivity enemyActivity;
-    private EnvironmentConditions environmentConditions;
-    private final List<TimelineEvent> operationTimeline = new ArrayList<>();
-    private final List<String> operationTags = new ArrayList<>();
-    private final List<String> supportUnits = new ArrayList<>();
-    private final List<String> recommendations = new ArrayList<>();
-    private String notes;
-    private final List<String> artifactsRecovered = new ArrayList<>();
-    private final List<String> evacuationZones = new ArrayList<>();
-    private final List<String> statusEffects = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    private MissionOutcome outcome = MissionOutcome.UNKNOWN;
+
+    @Column(name = "damage_cost")
+    private Long damageCost;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private Curse curse;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "mission_id_fk")
+    private List<Sorcerer> sorcerers = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "mission_id_fk")
+    private List<Technique> techniques = new ArrayList<>();
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private EconomicAssessment economicAssessment;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private CivilianImpact civilianImpact;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private EnemyActivity enemyActivity;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private EnvironmentConditions environmentConditions;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "mission_id_fk")
+    private List<TimelineEvent> operationTimeline = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "mission_operation_tags", joinColumns = @JoinColumn(name = "mission_id_fk"))
+    @Column(name = "tag_value")
+    private List<String> operationTags = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "mission_support_units", joinColumns = @JoinColumn(name = "mission_id_fk"))
+    @Column(name = "unit_value")
+    private List<String> supportUnits = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "mission_recommendations", joinColumns = @JoinColumn(name = "mission_id_fk"))
+    @Column(name = "recommendation_value")
+    private List<String> recommendations = new ArrayList<>();
+
+    @Column(length = 5000)
+    private String notes;
+
+    @ElementCollection
+    @CollectionTable(name = "mission_artifacts_recovered", joinColumns = @JoinColumn(name = "mission_id_fk"))
+    @Column(name = "artifact_value")
+    private List<String> artifactsRecovered = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "mission_evacuation_zones", joinColumns = @JoinColumn(name = "mission_id_fk"))
+    @Column(name = "zone_value")
+    private List<String> evacuationZones = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "mission_status_effects", joinColumns = @JoinColumn(name = "mission_id_fk"))
+    @Column(name = "effect_value")
+    private List<String> statusEffects = new ArrayList<>();
+
+    public Long getId() { return id; }
     public String getMissionId() { return missionId; }
     public void setMissionId(String missionId) { this.missionId = missionId; }
     public LocalDate getDate() { return date; }

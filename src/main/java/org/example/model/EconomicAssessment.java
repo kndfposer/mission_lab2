@@ -1,13 +1,18 @@
 package org.example.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "economic_assessment")
 public class EconomicAssessment {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private Long totalDamageCost;
     private Long infrastructureDamage;
     private Long commercialDamage;
     private Long transportDamage;
     private Integer recoveryEstimateDays;
     private Boolean insuranceCovered;
-
     public Long getTotalDamageCost() { return totalDamageCost; }
     public void setTotalDamageCost(Long totalDamageCost) { this.totalDamageCost = totalDamageCost; }
     public Long getInfrastructureDamage() { return infrastructureDamage; }

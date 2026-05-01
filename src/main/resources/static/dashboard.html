@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Hub</title>
+    <link rel="stylesheet" href="/dashboard.css">
+</head>
+<body>
+<div class="shell">
+    <aside class="sidebar">
+        <h1>Mission Hub</h1>
+        <p>Клиентский портал для работы с архивом миссий</p>
+        <nav>
+            <button data-target="uploadPane">Загрузка</button>
+            <button data-target="archivePane">Архив</button>
+            <button data-target="detailPane">Детали</button>
+            <button data-target="reportPane">Отчёты</button>
+            <button data-target="dropPane">Удаление</button>
+        </nav>
+        <a class="secondary-link" href="/swagger-ui.html" target="_blank">Swagger UI</a>
+    </aside>
+    <main class="content">
+        <section id="uploadPane" class="pane active"><h2>Загрузка миссии</h2><div class="panel"><form id="uploadForm"><label class="dropzone"><span>Выбери файл миссии</span><input type="file" id="missionFile" required></label><button type="submit">Отправить в архив</button></form><pre id="uploadResult" class="terminal"></pre></div></section>
+        <section id="archivePane" class="pane"><h2>Архив миссий</h2><div class="panel"><div class="toolbar"><button id="refreshArchiveBtn">Обновить</button></div><div id="missionCards" class="cards"></div></div></section>
+        <section id="detailPane" class="pane"><h2>Карточка миссии</h2><div class="panel"><div class="toolbar"><input id="detailMissionId" type="text" placeholder="missionId"><button id="loadDetailBtn">Открыть</button></div><pre id="detailResult" class="terminal"></pre></div></section>
+        <section id="reportPane" class="pane"><h2>Отчёты</h2><div class="panel"><div class="toolbar"><input id="reportMissionId" type="text" placeholder="missionId"><select id="reportType"><option value="summary">summary</option><option value="express">express</option><option value="memo">memo</option></select><button id="loadReportBtn">Сформировать</button></div><pre id="reportResult" class="terminal"></pre></div></section>
+        <section id="dropPane" class="pane"><h2>Удаление миссии</h2><div class="panel"><div class="toolbar"><input id="deleteMissionId" type="text" placeholder="missionId"><button id="deleteBtn" class="danger">Удалить из архива</button></div><pre id="deleteResult" class="terminal"></pre></div></section>
+    </main>
+</div>
+<script src="/dashboard.js"></script>
+</body>
+</html>
