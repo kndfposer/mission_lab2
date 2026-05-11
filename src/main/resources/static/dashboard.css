@@ -1,1 +1,158 @@
-*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,sans-serif;background:#0f172a;color:#e2e8f0}.shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}.sidebar{background:#111827;padding:24px;border-right:1px solid #1f2937}.sidebar h1{margin-top:0;font-size:28px}.sidebar p{color:#94a3b8;line-height:1.4}.sidebar nav{display:flex;flex-direction:column;gap:10px;margin:24px 0}.sidebar button,.secondary-link,.content button{border:none;border-radius:12px;padding:12px 14px;background:#2563eb;color:white;cursor:pointer;text-decoration:none;font-weight:600}.sidebar button:hover,.secondary-link:hover,.content button:hover{background:#1d4ed8}.secondary-link{display:inline-block;margin-top:12px}.content{padding:28px}.pane{display:none}.pane.active{display:block}.panel{background:#111827;border:1px solid #1f2937;border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.25)}.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}input[type=text],select{background:#0f172a;border:1px solid #334155;color:white;padding:12px 14px;border-radius:12px;min-width:220px}.dropzone{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}.dropzone input{color:#cbd5e1}.cards{display:grid;gap:12px}.card{background:#0f172a;border:1px solid #334155;border-radius:14px;padding:14px;cursor:pointer}.card:hover{border-color:#60a5fa}.terminal{background:#020617;color:#e2e8f0;border:1px solid #334155;border-radius:14px;padding:16px;min-height:140px;white-space:pre-wrap;overflow:auto}.danger{background:#dc2626!important}.danger:hover{background:#b91c1c!important}@media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{border-right:none;border-bottom:1px solid #1f2937}}
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Segoe UI, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+.shell {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+}
+
+.sidebar {
+    background: #111827;
+    padding: 24px;
+    border-right: 1px solid #1f2937;
+}
+
+.sidebar h1 {
+    margin-top: 0;
+    font-size: 28px;
+}
+
+.sidebar p {
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 24px 0;
+}
+
+.sidebar button,
+.secondary-link,
+.content button {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 14px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.sidebar button:hover,
+.secondary-link:hover,
+.content button:hover {
+    background: #1d4ed8;
+}
+
+.secondary-link {
+    display: inline-block;
+    margin-top: 12px;
+}
+
+.content {
+    padding: 28px;
+}
+
+.pane {
+    display: none;
+}
+
+.pane.active {
+    display: block;
+}
+
+.panel {
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.toolbar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+input[type="text"],
+select {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: white;
+    padding: 12px 14px;
+    border-radius: 12px;
+    min-width: 220px;
+}
+
+.dropzone {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.dropzone input {
+    color: #cbd5e1;
+}
+
+.cards {
+    display: grid;
+    gap: 12px;
+}
+
+.card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 14px;
+    cursor: pointer;
+}
+
+.card:hover {
+    border-color: #60a5fa;
+}
+
+.terminal {
+    background: #020617;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 16px;
+    min-height: 140px;
+    white-space: pre-wrap;
+    overflow: auto;
+}
+
+.danger {
+    background: #dc2626 !important;
+}
+
+.danger:hover {
+    background: #b91c1c !important;
+}
+
+@media (max-width: 900px) {
+    .shell {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        border-right: none;
+        border-bottom: 1px solid #1f2937;
+    }
+}
